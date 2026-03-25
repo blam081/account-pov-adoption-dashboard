@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <!--
-  Account POV executive dashboard — static prototype (hard-coded metrics).
-  POV funnel: use SMB / All segments toggle (sample values for “All segments”).
-  Open index.html in a browser or: cd account-pov-adoption && python -m http.server 8765
+  Account POV executive dashboard. Metrics load from dashboard-data.json (regenerate via export_dashboard_data.py).
+  SMB / All segments toggle for funnel. Serve over http(s) so fetch works (e.g. python -m http.server).
 -->
 <html lang="en">
 <head>
@@ -552,10 +551,31 @@
       margin-top: 3px;
       line-height: 1.35;
     }
+
+    .dashboard-banner {
+      margin: 0 0 1rem;
+      padding: 0.65rem 1rem;
+      border-radius: 10px;
+      background: #fef9c3;
+      color: #713f12;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .dashboard-banner.is-ok {
+      background: #ecfdf5;
+      color: #14532d;
+    }
+
+    .dashboard-banner.is-error {
+      background: #fef2f2;
+      color: #991b1b;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <p id="dashboard-data-banner" class="dashboard-banner" hidden></p>
     <header class="adoption-header" aria-label="Section title">
       <span class="rule" aria-hidden="true"></span>
       <h1>Adoption</h1>
@@ -573,8 +593,8 @@
           </svg>
         </div>
         <div class="label" id="kpi-total-povs-label">Total POVs</div>
-        <div class="value">32,427</div>
-        <div class="trend positive">▲ 196% vs Last Qtr</div>
+        <div class="value" id="kpi-total-povs-value">32,427</div>
+        <div class="trend positive" id="kpi-total-povs-trend">▲ 196% vs Last Qtr</div>
       </article>
 
       <!-- 2 Active AEs -->
@@ -587,8 +607,8 @@
           </svg>
         </div>
         <div class="label" id="kpi-active-aes-label">Active AEs</div>
-        <div class="value">8,534</div>
-        <div class="trend positive">▲ 93% vs Last Qtr</div>
+        <div class="value" id="kpi-active-aes-value">8,534</div>
+        <div class="trend positive" id="kpi-active-aes-trend">▲ 93% vs Last Qtr</div>
       </article>
 
       <!-- 3 Overall Adoption % -->
@@ -600,8 +620,8 @@
           </svg>
         </div>
         <div class="label" id="kpi-adoption-label">Overall Adoption %</div>
-        <div class="value">56%</div>
-        <div class="trend positive">▲ 19% vs Last Qtr</div>
+        <div class="value" id="kpi-adoption-value">56%</div>
+        <div class="trend positive" id="kpi-adoption-trend">▲ 19% vs Last Qtr</div>
       </article>
 
       <!-- 4 Adoption by Segment -->
@@ -618,18 +638,18 @@
         <div class="segment-grid">
           <div class="segment-item">
             <div class="seg-label">SMB</div>
-            <div class="seg-value">63%</div>
+            <div class="seg-value" id="kpi-seg-smb">63%</div>
           </div>
           <div class="segment-item">
             <div class="seg-label">ENTR</div>
-            <div class="seg-value">48%</div>
+            <div class="seg-value" id="kpi-seg-entr">48%</div>
           </div>
           <div class="segment-item">
             <div class="seg-label">CMRCL</div>
-            <div class="seg-value">50%</div>
+            <div class="seg-value" id="kpi-seg-cmrcl">50%</div>
           </div>
         </div>
-        <div class="segment-asof">Data as of Mar 2026</div>
+        <div class="segment-asof" id="kpi-segment-asof">Data as of Mar 2026</div>
       </article>
 
       <!-- 5 Overall Canvas Open % -->
@@ -640,8 +660,8 @@
           </svg>
         </div>
         <div class="label" id="kpi-canvas-label">Overall Canvas Open %</div>
-        <div class="value">13%</div>
-        <div class="trend positive">▲ 1% vs Last Qtr</div>
+        <div class="value" id="kpi-canvas-value">13%</div>
+        <div class="trend positive" id="kpi-canvas-trend">▲ 1% vs Last Qtr</div>
       </article>
     </section>
 
@@ -656,7 +676,7 @@
         <article class="usage-card usage-card--bars">
           <h2 class="usage-card-title">POV Usage By Segment &amp; Role</h2>
           <div class="hbar-subtitle">POV Usage By Segment</div>
-          <div>
+          <div id="hbar-segment-rows">
             <div class="hbar-row"><span class="hbar-label">SMB</span><div class="hbar-track"><div class="hbar-fill" style="width:100%"></div></div><span class="hbar-meta">15,338 (47%)</span></div>
             <div class="hbar-row"><span class="hbar-label">CMRCL</span><div class="hbar-track"><div class="hbar-fill" style="width:43%"></div></div><span class="hbar-meta">6,584 (20%)</span></div>
             <div class="hbar-row"><span class="hbar-label">Other</span><div class="hbar-track"><div class="hbar-fill" style="width:36%"></div></div><span class="hbar-meta">5,510 (17%)</span></div>
@@ -664,7 +684,7 @@
             <div class="hbar-row"><span class="hbar-label">Non Sales</span><div class="hbar-track"><div class="hbar-fill" style="width:13%"></div></div><span class="hbar-meta">1,951 (6%)</span></div>
           </div>
           <div class="hbar-subtitle">POV Usage By Role</div>
-          <div>
+          <div id="hbar-role-rows">
             <div class="hbar-row"><span class="hbar-label">Prime AE</span><div class="hbar-track"><div class="hbar-fill" style="width:100%"></div></div><span class="hbar-meta">24,231 (75%)</span></div>
             <div class="hbar-row"><span class="hbar-label">Specialist AE</span><div class="hbar-track"><div class="hbar-fill" style="width:20%"></div></div><span class="hbar-meta">4,785 (15%)</span></div>
             <div class="hbar-row"><span class="hbar-label">Other</span><div class="hbar-track"><div class="hbar-fill" style="width:12%"></div></div><span class="hbar-meta">2,969 (9%)</span></div>
@@ -680,14 +700,14 @@
           <h2 class="usage-donut-heading">POV Usage By Region</h2>
           <div class="donut-wrap">
             <div class="donut-static" aria-hidden="true">
-              <div class="donut-static-conic donut-static-conic--region"></div>
+              <div id="donut-region-conic" class="donut-static-conic donut-static-conic--region" style="background:conic-gradient(#93c5fd 0 56%,#1e3a5f 56% 81%,#38bdf8 81% 88%,#7dd3fc 88% 93%,#0284c7 93% 95%,#e2e8f0 95% 100%)"></div>
               <div class="donut-static-hole">
                 <span class="dc-label">Total POVs</span>
-                <span class="dc-val">32,427</span>
+                <span class="dc-val" id="donut-region-total">32,427</span>
               </div>
             </div>
           </div>
-          <div class="static-donut-legend">
+          <div id="donut-region-legend" class="static-donut-legend">
             <div class="lg-row"><span class="lg-swatch" style="background:#93c5fd"></span> AMER: 18,268 (56%)</div>
             <div class="lg-row"><span class="lg-swatch" style="background:#1e3a5f"></span> UKI: 8,036 (25%)</div>
             <div class="lg-row"><span class="lg-swatch" style="background:#38bdf8"></span> EMEA: 2,157 (7%)</div>
@@ -700,14 +720,14 @@
           <h2 class="usage-donut-heading">POV Usage By Tier</h2>
           <div class="donut-wrap">
             <div class="donut-static" aria-hidden="true">
-              <div class="donut-static-conic donut-static-conic--tier"></div>
+              <div id="donut-tier-conic" class="donut-static-conic donut-static-conic--tier" style="background:conic-gradient(#93c5fd 0 30%,#1e3a5f 30% 58%,#38bdf8 58% 74%,#0c4a6e 74% 84%,#7dd3fc 84% 89%,#e2e8f0 89% 100%)"></div>
               <div class="donut-static-hole">
                 <span class="dc-label">Total POVs</span>
-                <span class="dc-val">32,427</span>
+                <span class="dc-val" id="donut-tier-total">32,427</span>
               </div>
             </div>
           </div>
-          <div class="static-donut-legend">
+          <div id="donut-tier-legend" class="static-donut-legend">
             <div class="lg-row"><span class="lg-swatch" style="background:#93c5fd"></span> Tier 2: 9,872 (30%)</div>
             <div class="lg-row"><span class="lg-swatch" style="background:#1e3a5f"></span> Tier 1: 9,181 (28%)</div>
             <div class="lg-row"><span class="lg-swatch" style="background:#38bdf8"></span> Tier 3: 5,285 (16%)</div>
@@ -837,8 +857,125 @@
     (function () {
       var scopeEl = document.getElementById("funnel-scope-label");
       var btns = document.querySelectorAll(".funnel-seg-btn");
+      var banner = document.getElementById("dashboard-data-banner");
+      var currentSeg = "smb";
+
+      var FUNNEL_SLOT_HAS_SUB = [true, true, true, true, false, true, true, true, false, true, true, true, true];
+
+      var DONUT_COLORS = ["#93c5fd", "#1e3a5f", "#38bdf8", "#7dd3fc", "#0284c7", "#0c4a6e", "#cbd5e1"];
+
+      function esc(s) {
+        var d = document.createElement("div");
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      function buildConicGradient(slices) {
+        var totalPct = 0;
+        slices.forEach(function (s) {
+          totalPct += s.pct;
+        });
+        var scale = totalPct > 0 ? 100 / totalPct : 1;
+        var acc = 0;
+        var parts = [];
+        for (var i = 0; i < slices.length; i++) {
+          var p = (slices[i].pct * scale) / 100;
+          if (p <= 0) continue;
+          var start = acc;
+          acc += p;
+          parts.push(DONUT_COLORS[i % DONUT_COLORS.length] + " " + start * 100 + "% " + acc * 100 + "%");
+        }
+        if (acc < 0.999) {
+          parts.push("#e2e8f0 " + acc * 100 + "% 100%");
+        }
+        return parts.length ? "conic-gradient(" + parts.join(", ") + ")" : "#e2e8f0";
+      }
+
+      function renderHbarRows(container, rows) {
+        container.innerHTML = rows
+          .map(function (r) {
+            return (
+              '<div class="hbar-row"><span class="hbar-label">' +
+              esc(r.label) +
+              '</span><div class="hbar-track"><div class="hbar-fill" style="width:' +
+              r.bar_width_pct +
+              '%"></div></div><span class="hbar-meta">' +
+              r.count.toLocaleString("en-US") +
+              " (" +
+              r.pct +
+              "%)</span></div>"
+            );
+          })
+          .join("");
+      }
+
+      function renderDonutLegend(container, slices) {
+        container.innerHTML = slices
+          .map(function (s, i) {
+            return (
+              '<div class="lg-row"><span class="lg-swatch" style="background:' +
+              DONUT_COLORS[i % DONUT_COLORS.length] +
+              '"></span> ' +
+              esc(s.label) +
+              ": " +
+              s.count.toLocaleString("en-US") +
+              " (" +
+              s.pct +
+              "%)</div>"
+            );
+          })
+          .join("");
+      }
+
+      function applyKpi(kpi) {
+        document.getElementById("kpi-total-povs-value").textContent = (kpi.totalPovs.value || 0).toLocaleString("en-US");
+        document.getElementById("kpi-total-povs-trend").textContent = kpi.totalPovs.trend;
+        document.getElementById("kpi-active-aes-value").textContent = (kpi.activeAes.value || 0).toLocaleString("en-US");
+        document.getElementById("kpi-active-aes-trend").textContent = kpi.activeAes.trend;
+        document.getElementById("kpi-adoption-value").textContent = kpi.adoptionPct.value + "%";
+        document.getElementById("kpi-adoption-trend").textContent = kpi.adoptionPct.trend;
+        document.getElementById("kpi-seg-smb").textContent = kpi.segmentAdoption.smb + "%";
+        document.getElementById("kpi-seg-entr").textContent = kpi.segmentAdoption.entr + "%";
+        document.getElementById("kpi-seg-cmrcl").textContent = kpi.segmentAdoption.cmrcl + "%";
+        document.getElementById("kpi-segment-asof").textContent = kpi.segmentAdoption.asOf;
+        document.getElementById("kpi-canvas-value").textContent = kpi.canvasOpenPct.value + "%";
+        document.getElementById("kpi-canvas-trend").textContent = kpi.canvasOpenPct.trend;
+      }
+
+      function applyUsageCharts(usage, donuts) {
+        renderHbarRows(document.getElementById("hbar-segment-rows"), usage.bySegment);
+        renderHbarRows(document.getElementById("hbar-role-rows"), usage.byRole);
+        var reg = donuts.region;
+        var tier = donuts.tier;
+        document.getElementById("donut-region-total").textContent = (reg.total || 0).toLocaleString("en-US");
+        document.getElementById("donut-tier-total").textContent = (tier.total || 0).toLocaleString("en-US");
+        document.getElementById("donut-region-conic").style.background = buildConicGradient(reg.slices);
+        document.getElementById("donut-tier-conic").style.background = buildConicGradient(tier.slices);
+        renderDonutLegend(document.getElementById("donut-region-legend"), reg.slices);
+        renderDonutLegend(document.getElementById("donut-tier-legend"), tier.slices);
+      }
+
+      function applyFunnelSlots(funnel) {
+        if (!funnel || !funnel.length) return;
+        var vals = document.querySelectorAll(".js-funnel-val");
+        var subs = document.querySelectorAll(".js-funnel-sub");
+        var si = 0;
+        for (var i = 0; i < funnel.length && i < vals.length; i++) {
+          var slot = funnel[i];
+          vals[i].setAttribute("data-smb", slot.smb.text);
+          vals[i].setAttribute("data-all", slot.all.text);
+          vals[i].setAttribute("data-tone-smb", slot.smb.tone);
+          vals[i].setAttribute("data-tone-all", slot.all.tone);
+          if (FUNNEL_SLOT_HAS_SUB[i] && subs[si]) {
+            subs[si].setAttribute("data-sub-smb", slot.smb.sub || "");
+            subs[si].setAttribute("data-sub-all", slot.all.sub || "");
+            si++;
+          }
+        }
+      }
 
       function applySegment(seg) {
+        currentSeg = seg;
         if (scopeEl) {
           scopeEl.textContent = seg === "smb" ? "(SMB)" : "(All segments)";
         }
@@ -858,6 +995,44 @@
           if (s != null) el.textContent = s;
         });
       }
+
+      function showBanner(ok, msg) {
+        if (!banner) return;
+        banner.hidden = false;
+        banner.textContent = msg;
+        banner.className = "dashboard-banner " + (ok ? "is-ok" : "is-error");
+      }
+
+      function applyDashboardPayload(data) {
+        if (data.schemaVersion !== 1) {
+          showBanner(false, "dashboard-data.json: unsupported schemaVersion.");
+          return;
+        }
+        applyKpi(data.kpi);
+        applyUsageCharts(data.usage, data.donuts);
+        applyFunnelSlots(data.funnel);
+        applySegment(currentSeg);
+      }
+
+      fetch("dashboard-data.json", { cache: "no-store" })
+        .then(function (r) {
+          if (!r.ok) throw new Error(r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          applyDashboardPayload(data);
+          var t = data.generatedAt ? new Date(data.generatedAt) : null;
+          var msg = t && !isNaN(t.getTime())
+            ? "Dashboard metrics loaded (data generated " + t.toLocaleString() + ")."
+            : "Dashboard metrics loaded from dashboard-data.json.";
+          showBanner(true, msg);
+        })
+        .catch(function () {
+          showBanner(
+            false,
+            "Could not load dashboard-data.json (open via local web server, or check file is next to index.html). Using page defaults."
+          );
+        });
 
       btns.forEach(function (b) {
         b.addEventListener("click", function () {

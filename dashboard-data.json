@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-03-25T18:37:42.180041+00:00",
+  "kpi": {
+    "totalPovs": {
+      "value": 32427,
+      "trend": "\u25b2 196% vs Last Qtr"
+    },
+    "activeAes": {
+      "value": 8534,
+      "trend": "\u25b2 93% vs Last Qtr"
+    },
+    "adoptionPct": {
+      "value": 56.0,
+      "trend": "\u25b2 19% vs Last Qtr"
+    },
+    "segmentAdoption": {
+      "smb": 63,
+      "entr": 48,
+      "cmrcl": 50,
+      "asOf": "Data as of Mar 2026"
+    },
+    "canvasOpenPct": {
+      "value": 13.0,
+      "trend": "\u25b2 1% vs Last Qtr"
+    }
+  },
+  "usage": {
+    "bySegment": [
+      {
+        "label": "SMB",
+        "count": 15338,
+        "pct": 47,
+        "bar_width_pct": 100
+      },
+      {
+        "label": "CMRCL",
+        "count": 6584,
+        "pct": 20,
+        "bar_width_pct": 43
+      },
+      {
+        "label": "Other",
+        "count": 5510,
+        "pct": 17,
+        "bar_width_pct": 36
+      },
+      {
+        "label": "ENTR",
+        "count": 5036,
+        "pct": 16,
+        "bar_width_pct": 33
+      },
+      {
+        "label": "Non Sales",
+        "count": 1951,
+        "pct": 6,
+        "bar_width_pct": 13
+      }
+    ],
+    "byRole": [
+      {
+        "label": "Prime AE",
+        "count": 24231,
+        "pct": 75,
+        "bar_width_pct": 100
+      },
+      {
+        "label": "Specialist AE",
+        "count": 4785,
+        "pct": 15,
+        "bar_width_pct": 20
+      },
+      {
+        "label": "Other",
+        "count": 2969,
+        "pct": 9,
+        "bar_width_pct": 12
+      },
+      {
+        "label": "FLM",
+        "count": 1293,
+        "pct": 4,
+        "bar_width_pct": 5
+      },
+      {
+        "label": "BDR",
+        "count": 992,
+        "pct": 3,
+        "bar_width_pct": 4
+      },
+      {
+        "label": "ECS",
+        "count": 866,
+        "pct": 3,
+        "bar_width_pct": 4
+      },
+      {
+        "label": "SE",
+        "count": 520,
+        "pct": 2,
+        "bar_width_pct": 2
+      },
+      {
+        "label": "SDR",
+        "count": 37,
+        "pct": 0,
+        "bar_width_pct": 1
+      }
+    ]
+  },
+  "donuts": {
+    "region": {
+      "total": 32427,
+      "slices": [
+        {
+          "label": "AMER",
+          "count": 18268,
+          "pct": 56
+        },
+        {
+          "label": "UKI",
+          "count": 8036,
+          "pct": 25
+        },
+        {
+          "label": "EMEA",
+          "count": 2157,
+          "pct": 7
+        },
+        {
+          "label": "APAC",
+          "count": 1609,
+          "pct": 5
+        },
+        {
+          "label": "LATAM",
+          "count": 531,
+          "pct": 2
+        }
+      ]
+    },
+    "tier": {
+      "total": 32427,
+      "slices": [
+        {
+          "label": "Tier 2",
+          "count": 9872,
+          "pct": 30
+        },
+        {
+          "label": "Tier 1",
+          "count": 9181,
+          "pct": 28
+        },
+        {
+          "label": "Tier 3",
+          "count": 5285,
+          "pct": 16
+        },
+        {
+          "label": "Other",
+          "count": 3318,
+          "pct": 10
+        },
+        {
+          "label": "Tier 4",
+          "count": 1644,
+          "pct": 5
+        }
+      ]
+    }
+  },
+  "funnel": [
+    {
+      "smb": {
+        "text": "+27% uplift (sig)",
+        "sub": "Total connects & mtgs Actual/Benchmark",
+        "tone": "good"
+      },
+      "all": {
+        "text": "+21% uplift (sig)",
+        "sub": "Total connects & mtgs Actual/Benchmark",
+        "tone": "good"
+      }
+    },
+    {
+      "smb": {
+        "text": "+18.8% uplift (Sig)",
+        "sub": "New pipeline created",
+        "tone": "good"
+      },
+      "all": {
+        "text": "+14.5% uplift (Sig)",
+        "sub": "New pipeline created",
+        "tone": "good"
+      }
+    },
+    {
+      "smb": {
+        "text": "+9% uplift (Sig)",
+        "sub": "# of Opportunities",
+        "tone": "good"
+      },
+      "all": {
+        "text": "+6% uplift (Sig)",
+        "sub": "# of Opportunities",
+        "tone": "good"
+      }
+    },
+    {
+      "smb": {
+        "text": "+9% uplift (Sig)",
+        "sub": "$ of Upsell/Cross-sell",
+        "tone": "good"
+      },
+      "all": {
+        "text": "+5% uplift (Sig)",
+        "sub": "$ of Upsell/Cross-sell",
+        "tone": "good"
+      }
+    },
+    {
+      "smb": {
+        "text": "\u2014",
+        "sub": "",
+        "tone": "empty"
+      },
+      "all": {
+        "text": "\u2014",
+        "sub": "",
+        "tone": "empty"
+      }
+    },
+    {
+      "smb": {
+        "text": "49% Progression (Sig)",
+        "sub": "Stg 2-4 movement Share of opty's",
+        "tone": "good"
+      },
+      "all": {
+        "text": "41% Progression (Sig)",
+        "sub": "Stg 2-4 movement Share of opty's",
+        "tone": "good"
+      }
+    },
+    {
+      "smb": {
+        "text": "25% Progression (No Sig)",
+        "sub": "Stg 2-4 Days between stages",
+        "tone": "good"
+      },
+      "all": {
+        "text": "20% Progression (No Sig)",
+        "sub": "Stg 2-4 Days between stages",
+        "tone": "good"
+      }
+    },
+    {
+      "smb": {
+        "text": "2.9% uplift (Not sig)",
+        "sub": "Stg 4+ momentum",
+        "tone": "neutral"
+      },
+      "all": {
+        "text": "1.5% uplift (Not sig)",
+        "sub": "Stg 4+ momentum",
+        "tone": "neutral"
+      }
+    },
+    {
+      "smb": {
+        "text": "\u2014",
+        "sub": "",
+        "tone": "empty"
+      },
+      "all": {
+        "text": "\u2014",
+        "sub": "",
+        "tone": "empty"
+      }
+    },
+    {
+      "smb": {
+        "text": "+46% uplift (Sig)",
+        "sub": "Closed Won results $1.4K ($1.1K)",
+        "tone": "good"
+      },
+      "all": {
+        "text": "+34% uplift (Sig)",
+        "sub": "Closed Won results $1.2K ($1.0K)",
+        "tone": "good"
+      }
+    },
+    {
+      "smb": {
+        "text": "+11% uplift (No sig)",
+        "sub": "Larger Deal sizes",
+        "tone": "good"
+      },
+      "all": {
+        "text": "+8% uplift (No sig)",
+        "sub": "Larger Deal sizes",
+        "tone": "good"
+      }
+    },
+    {
+      "smb": {
+        "text": "+8% uplift (No sig)",
+        "sub": "Higher Deal cycles",
+        "tone": "bad"
+      },
+      "all": {
+        "text": "+6% uplift (No sig)",
+        "sub": "Higher Deal cycles",
+        "tone": "bad"
+      }
+    },
+    {
+      "smb": {
+        "text": "-13% uplift",
+        "sub": "Lower conversion",
+        "tone": "bad"
+      },
+      "all": {
+        "text": "-9% uplift",
+        "sub": "Lower conversion",
+        "tone": "bad"
+      }
+    }
+  ]
+}
