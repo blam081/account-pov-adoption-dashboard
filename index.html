@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<!--
+  Account POV executive dashboard — static prototype (hard-coded metrics).
+  POV funnel: use SMB / All segments toggle (sample values for “All segments”).
+  Open index.html in a browser or: cd account-pov-adoption && python -m http.server 8765
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account POV — Executive Dashboard</title>
+  <style>
+    :root {
+      --bg-page: #e5e7eb;
+      --navy: #1e3a5f;
+      --navy-deep: #0f2744;
+      --label: #4b5563;
+      --positive: #15803d;
+      --negative: #b91c1c;
+      --card: #ffffff;
+      --rule: #1e3a5f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg-page);
+      color: var(--navy);
+      padding: 2.5rem 1.5rem 3rem;
+    }
+
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .adoption-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .adoption-header .rule {
+      flex: 1;
+      height: 2px;
+      background: var(--rule);
+      border-radius: 1px;
+    }
+
+    .adoption-header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--navy-deep);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .kpi-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      justify-content: flex-start;
+      align-items: stretch;
+    }
+
+    .kpi-card {
+      background: var(--card);
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(15, 39, 68, 0.08);
+      padding: 1.35rem 1.5rem 1.25rem;
+      min-width: 200px;
+      flex: 0 0 auto;
+      width: 220px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .kpi-card--segments {
+      width: 320px;
+      min-width: 280px;
+    }
+
+    .kpi-card .icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 0.65rem;
+      color: var(--navy);
+      flex-shrink: 0;
+    }
+
+    .kpi-card .icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .kpi-card .label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--label);
+      margin-bottom: 0.5rem;
+      line-height: 1.25;
+    }
+
+    .kpi-card .value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--navy-deep);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 0.45rem;
+    }
+
+    .kpi-card .trend {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-top: auto;
+    }
+
+    .kpi-card .trend.positive { color: var(--positive); }
+    .kpi-card .trend.negative { color: var(--negative); }
+    .kpi-card .trend.neutral { color: var(--label); }
+
+    .segment-grid {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+      flex: 1;
+      align-items: flex-end;
+    }
+
+    .segment-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .segment-item .seg-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--label);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      margin-bottom: 0.35rem;
+    }
+
+    .segment-item .seg-value {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--navy-deep);
+    }
+
+    .segment-asof {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--positive);
+      margin-top: 0.35rem;
+    }
+
+    /* POV usage section */
+    .usage-section {
+      margin-top: 2.75rem;
+    }
+
+    .usage-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      align-items: stretch;
+    }
+
+    .usage-card {
+      background: var(--card);
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(15, 39, 68, 0.08);
+      padding: 1.25rem 1.35rem 1.35rem;
+      flex: 1 1 300px;
+      min-width: 280px;
+    }
+
+    .usage-card--bars {
+      flex: 1 1 400px;
+      min-width: 320px;
+      max-width: 520px;
+    }
+
+    .usage-card--donut {
+      flex: 1 1 300px;
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .usage-card-title {
+      margin: 0 0 1rem;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--navy-deep);
+      text-align: center;
+    }
+
+    .hbar-subtitle {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 0.85rem 0 0.45rem;
+    }
+
+    .hbar-subtitle:first-of-type {
+      margin-top: 0;
+    }
+
+    .hbar-row {
+      display: grid;
+      grid-template-columns: minmax(68px, 78px) 1fr auto;
+      gap: 6px 10px;
+      align-items: center;
+      margin-bottom: 7px;
+      font-size: 0.7rem;
+    }
+
+    .hbar-label {
+      color: var(--label);
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .hbar-track {
+      height: 11px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .hbar-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #93c5fd, #3b82f6);
+      min-width: 0;
+    }
+
+    .hbar-meta {
+      color: var(--navy-deep);
+      font-weight: 700;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .usage-donut-heading {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--navy-deep);
+      text-align: center;
+      margin: 0 0 0.5rem;
+    }
+
+    .donut-wrap {
+      position: relative;
+      width: min(280px, 100%);
+      aspect-ratio: 1;
+      margin: 0 auto;
+    }
+
+    .donut-static {
+      position: relative;
+      width: min(260px, 100%);
+      aspect-ratio: 1;
+      margin: 0 auto;
+    }
+
+    .donut-static-conic {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+
+    .donut-static-conic--region {
+      background: conic-gradient(
+        #93c5fd 0 56%,
+        #1e3a5f 56% 81%,
+        #38bdf8 81% 88%,
+        #7dd3fc 88% 93%,
+        #0284c7 93% 95%,
+        #e2e8f0 95% 100%
+      );
+    }
+
+    .donut-static-conic--tier {
+      background: conic-gradient(
+        #93c5fd 0 30%,
+        #1e3a5f 30% 58%,
+        #38bdf8 58% 74%,
+        #0c4a6e 74% 84%,
+        #7dd3fc 84% 89%,
+        #e2e8f0 89% 100%
+      );
+    }
+
+    .donut-static-hole {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 62%;
+      height: 62%;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.2;
+      box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.95);
+      pointer-events: none;
+    }
+
+    .donut-static-hole .dc-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--label);
+    }
+
+    .donut-static-hole .dc-val {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--navy-deep);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .static-donut-legend {
+      margin-top: 0.85rem;
+      font-size: 0.62rem;
+      color: var(--label);
+      line-height: 1.45;
+    }
+
+    .static-donut-legend .lg-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 5px;
+    }
+
+    .static-donut-legend .lg-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    [hidden] { display: none !important; }
+
+    /* SMB POV funnel */
+    .smb-funnel-section {
+      margin-top: 2.75rem;
+    }
+
+    .smb-funnel-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.35rem;
+    }
+
+    .smb-funnel-title {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--navy-deep);
+      letter-spacing: -0.02em;
+      text-align: left;
+      line-height: 1.3;
+    }
+
+    .smb-funnel-scope {
+      color: #2563eb;
+      font-weight: 800;
+    }
+
+    .funnel-segment-toggle {
+      display: inline-flex;
+      border-radius: 10px;
+      padding: 3px;
+      background: #e2e8f0;
+      gap: 2px;
+    }
+
+    .funnel-seg-btn {
+      border: none;
+      background: transparent;
+      padding: 0.48rem 1.1rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--label);
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .funnel-seg-btn.is-active {
+      background: #fff;
+      color: var(--navy-deep);
+      box-shadow: 0 1px 3px rgba(15, 39, 68, 0.12);
+    }
+
+    .funnel-seg-btn:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+
+    .fn-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .fn-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 200px) 12px 1fr;
+      gap: 0 14px;
+      align-items: stretch;
+    }
+
+    .fn-stage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100%;
+    }
+
+    .fn-trap {
+      width: 100%;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.62rem;
+      letter-spacing: 0.07em;
+      text-align: center;
+      line-height: 1.25;
+      padding: 0.4rem 0.5rem;
+      box-sizing: border-box;
+    }
+
+    .fn-trap--gen {
+      background: #1e3a5f;
+      clip-path: polygon(3% 0, 97% 0, 85% 100%, 15% 100%);
+    }
+
+    .fn-trap--prog {
+      background: #0ea5e9;
+      clip-path: polygon(10% 0, 90% 0, 80% 100%, 20% 100%);
+    }
+
+    .fn-trap--conv {
+      background: #93c5fd;
+      clip-path: polygon(18% 0, 82% 0, 72% 100%, 28% 100%);
+    }
+
+    .fn-rail {
+      background: #2563eb;
+      border-radius: 3px;
+      width: 100%;
+      min-height: 48px;
+    }
+
+    .fn-card {
+      background: var(--card);
+      border-radius: 14px;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-left: 4px solid #2563eb;
+      box-shadow: 0 4px 14px rgba(15, 39, 68, 0.08);
+      padding: 1rem 1.2rem 1.1rem 1rem;
+    }
+
+    .fn-card h3 {
+      margin: 0 0 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #2563eb;
+    }
+
+    .fn-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.1rem;
+      align-items: flex-start;
+    }
+
+    .fn-metric {
+      flex: 1 1 130px;
+      min-width: 118px;
+      max-width: 220px;
+    }
+
+    .fn-metric--boxed {
+      border: 1px solid #111;
+      padding: 8px 10px;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .fn-metric-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      color: var(--navy-deep);
+      letter-spacing: 0.03em;
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+
+    .fn-metric-value {
+      font-size: 0.78rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .fn-metric-value--good {
+      color: #15803d;
+    }
+
+    .fn-metric-value--bad {
+      color: #b91c1c;
+    }
+
+    .fn-metric-value--neutral {
+      color: var(--navy-deep);
+    }
+
+    .fn-metric-value--empty {
+      color: #9ca3af;
+      font-weight: 600;
+    }
+
+    .fn-metric-sub {
+      font-size: 0.6rem;
+      color: #6b7280;
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="adoption-header" aria-label="Section title">
+      <span class="rule" aria-hidden="true"></span>
+      <h1>Adoption</h1>
+      <span class="rule" aria-hidden="true"></span>
+    </header>
+
+    <section class="kpi-row" aria-label="KPI cards">
+      <!-- 1 Total POVs -->
+      <article class="kpi-card" aria-labelledby="kpi-total-povs-label">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="6" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+          </svg>
+        </div>
+        <div class="label" id="kpi-total-povs-label">Total POVs</div>
+        <div class="value">32,427</div>
+        <div class="trend positive">▲ 196% vs Last Qtr</div>
+      </article>
+
+      <!-- 2 Active AEs -->
+      <article class="kpi-card" aria-labelledby="kpi-active-aes-label">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M19 8l2 2 4-4" />
+          </svg>
+        </div>
+        <div class="label" id="kpi-active-aes-label">Active AEs</div>
+        <div class="value">8,534</div>
+        <div class="trend positive">▲ 93% vs Last Qtr</div>
+      </article>
+
+      <!-- 3 Overall Adoption % -->
+      <article class="kpi-card" aria-labelledby="kpi-adoption-label">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </div>
+        <div class="label" id="kpi-adoption-label">Overall Adoption %</div>
+        <div class="value">56%</div>
+        <div class="trend positive">▲ 19% vs Last Qtr</div>
+      </article>
+
+      <!-- 4 Adoption by Segment -->
+      <article class="kpi-card kpi-card--segments" aria-labelledby="kpi-segment-label">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </div>
+        <div class="label" id="kpi-segment-label">Adoption by Segment</div>
+        <div class="segment-grid">
+          <div class="segment-item">
+            <div class="seg-label">SMB</div>
+            <div class="seg-value">63%</div>
+          </div>
+          <div class="segment-item">
+            <div class="seg-label">ENTR</div>
+            <div class="seg-value">48%</div>
+          </div>
+          <div class="segment-item">
+            <div class="seg-label">CMRCL</div>
+            <div class="seg-value">50%</div>
+          </div>
+        </div>
+        <div class="segment-asof">Data as of Mar 2026</div>
+      </article>
+
+      <!-- 5 Overall Canvas Open % -->
+      <article class="kpi-card" aria-labelledby="kpi-canvas-label">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.849a.5.5 0 0 0-.342.534l1.05 6.426a.5.5 0 0 1-.986.204l-9.23-5.09a.5.5 0 0 1-.098-.163z" />
+          </svg>
+        </div>
+        <div class="label" id="kpi-canvas-label">Overall Canvas Open %</div>
+        <div class="value">13%</div>
+        <div class="trend positive">▲ 1% vs Last Qtr</div>
+      </article>
+    </section>
+
+    <section class="usage-section" id="pov-usage-section" aria-label="POV usage charts">
+      <header class="adoption-header">
+        <span class="rule" aria-hidden="true"></span>
+        <h1>POV usage</h1>
+        <span class="rule" aria-hidden="true"></span>
+      </header>
+
+      <div class="usage-row">
+        <article class="usage-card usage-card--bars">
+          <h2 class="usage-card-title">POV Usage By Segment &amp; Role</h2>
+          <div class="hbar-subtitle">POV Usage By Segment</div>
+          <div>
+            <div class="hbar-row"><span class="hbar-label">SMB</span><div class="hbar-track"><div class="hbar-fill" style="width:100%"></div></div><span class="hbar-meta">15,338 (47%)</span></div>
+            <div class="hbar-row"><span class="hbar-label">CMRCL</span><div class="hbar-track"><div class="hbar-fill" style="width:43%"></div></div><span class="hbar-meta">6,584 (20%)</span></div>
+            <div class="hbar-row"><span class="hbar-label">Other</span><div class="hbar-track"><div class="hbar-fill" style="width:36%"></div></div><span class="hbar-meta">5,510 (17%)</span></div>
+            <div class="hbar-row"><span class="hbar-label">ENTR</span><div class="hbar-track"><div class="hbar-fill" style="width:33%"></div></div><span class="hbar-meta">5,036 (16%)</span></div>
+            <div class="hbar-row"><span class="hbar-label">Non Sales</span><div class="hbar-track"><div class="hbar-fill" style="width:13%"></div></div><span class="hbar-meta">1,951 (6%)</span></div>
+          </div>
+          <div class="hbar-subtitle">POV Usage By Role</div>
+          <div>
+            <div class="hbar-row"><span class="hbar-label">Prime AE</span><div class="hbar-track"><div class="hbar-fill" style="width:100%"></div></div><span class="hbar-meta">24,231 (75%)</span></div>
+            <div class="hbar-row"><span class="hbar-label">Specialist AE</span><div class="hbar-track"><div class="hbar-fill" style="width:20%"></div></div><span class="hbar-meta">4,785 (15%)</span></div>
+            <div class="hbar-row"><span class="hbar-label">Other</span><div class="hbar-track"><div class="hbar-fill" style="width:12%"></div></div><span class="hbar-meta">2,969 (9%)</span></div>
+            <div class="hbar-row"><span class="hbar-label">FLM</span><div class="hbar-track"><div class="hbar-fill" style="width:5%"></div></div><span class="hbar-meta">1,293 (4%)</span></div>
+            <div class="hbar-row"><span class="hbar-label">BDR</span><div class="hbar-track"><div class="hbar-fill" style="width:4%"></div></div><span class="hbar-meta">992 (3%)</span></div>
+            <div class="hbar-row"><span class="hbar-label">ECS</span><div class="hbar-track"><div class="hbar-fill" style="width:4%"></div></div><span class="hbar-meta">866 (3%)</span></div>
+            <div class="hbar-row"><span class="hbar-label">SE</span><div class="hbar-track"><div class="hbar-fill" style="width:2%"></div></div><span class="hbar-meta">520 (2%)</span></div>
+            <div class="hbar-row"><span class="hbar-label">SDR</span><div class="hbar-track"><div class="hbar-fill" style="width:1%"></div></div><span class="hbar-meta">37 (0%)</span></div>
+          </div>
+        </article>
+
+        <article class="usage-card usage-card--donut">
+          <h2 class="usage-donut-heading">POV Usage By Region</h2>
+          <div class="donut-wrap">
+            <div class="donut-static" aria-hidden="true">
+              <div class="donut-static-conic donut-static-conic--region"></div>
+              <div class="donut-static-hole">
+                <span class="dc-label">Total POVs</span>
+                <span class="dc-val">32,427</span>
+              </div>
+            </div>
+          </div>
+          <div class="static-donut-legend">
+            <div class="lg-row"><span class="lg-swatch" style="background:#93c5fd"></span> AMER: 18,268 (56%)</div>
+            <div class="lg-row"><span class="lg-swatch" style="background:#1e3a5f"></span> UKI: 8,036 (25%)</div>
+            <div class="lg-row"><span class="lg-swatch" style="background:#38bdf8"></span> EMEA: 2,157 (7%)</div>
+            <div class="lg-row"><span class="lg-swatch" style="background:#7dd3fc"></span> APAC: 1,609 (5%)</div>
+            <div class="lg-row"><span class="lg-swatch" style="background:#0284c7"></span> LATAM: 531 (2%)</div>
+          </div>
+        </article>
+
+        <article class="usage-card usage-card--donut">
+          <h2 class="usage-donut-heading">POV Usage By Tier</h2>
+          <div class="donut-wrap">
+            <div class="donut-static" aria-hidden="true">
+              <div class="donut-static-conic donut-static-conic--tier"></div>
+              <div class="donut-static-hole">
+                <span class="dc-label">Total POVs</span>
+                <span class="dc-val">32,427</span>
+              </div>
+            </div>
+          </div>
+          <div class="static-donut-legend">
+            <div class="lg-row"><span class="lg-swatch" style="background:#93c5fd"></span> Tier 2: 9,872 (30%)</div>
+            <div class="lg-row"><span class="lg-swatch" style="background:#1e3a5f"></span> Tier 1: 9,181 (28%)</div>
+            <div class="lg-row"><span class="lg-swatch" style="background:#38bdf8"></span> Tier 3: 5,285 (16%)</div>
+            <div class="lg-row"><span class="lg-swatch" style="background:#0c4a6e"></span> Other: 3,318 (10%)</div>
+            <div class="lg-row"><span class="lg-swatch" style="background:#7dd3fc"></span> Tier 4: 1,644 (5%)</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="smb-funnel-section" aria-label="Accounts which generated POV funnel">
+      <div class="smb-funnel-head">
+        <h2 class="smb-funnel-title">
+          Accounts which generated POV <span id="funnel-scope-label" class="smb-funnel-scope">(SMB)</span>
+        </h2>
+        <div class="funnel-segment-toggle" role="group" aria-label="Filter funnel by segment">
+          <button type="button" class="funnel-seg-btn is-active" data-segment="smb" aria-pressed="true">SMB</button>
+          <button type="button" class="funnel-seg-btn" data-segment="all" aria-pressed="false">All segments</button>
+        </div>
+      </div>
+
+      <div class="fn-rows">
+        <div class="fn-row">
+          <div class="fn-stage">
+            <div class="fn-trap fn-trap--gen">GENERATION</div>
+          </div>
+          <div class="fn-rail" aria-hidden="true"></div>
+          <article class="fn-card">
+            <h3>Top of Funnel</h3>
+            <div class="fn-metrics">
+              <div class="fn-metric">
+                <div class="fn-metric-label">SALES ACTIVITY</div>
+                <div class="fn-metric-value fn-metric-value--good js-funnel-val" data-smb="+27% uplift (sig)" data-all="+21% uplift (sig)" data-tone-smb="good" data-tone-all="good">+27% uplift (sig)</div>
+                <div class="fn-metric-sub js-funnel-sub" data-sub-smb="Total connects &amp; mtgs Actual/Benchmark" data-sub-all="Total connects &amp; mtgs Actual/Benchmark">Total connects &amp; mtgs Actual/Benchmark</div>
+              </div>
+              <div class="fn-metric">
+                <div class="fn-metric-label">PIPEGEN AMOUNT</div>
+                <div class="fn-metric-value fn-metric-value--good js-funnel-val" data-smb="+18.8% uplift (Sig)" data-all="+14.5% uplift (Sig)" data-tone-smb="good" data-tone-all="good">+18.8% uplift (Sig)</div>
+                <div class="fn-metric-sub js-funnel-sub" data-sub-smb="New pipeline created" data-sub-all="New pipeline created">New pipeline created</div>
+              </div>
+              <div class="fn-metric">
+                <div class="fn-metric-label">PIPEGEN COUNT</div>
+                <div class="fn-metric-value fn-metric-value--good js-funnel-val" data-smb="+9% uplift (Sig)" data-all="+6% uplift (Sig)" data-tone-smb="good" data-tone-all="good">+9% uplift (Sig)</div>
+                <div class="fn-metric-sub js-funnel-sub" data-sub-smb="# of Opportunities" data-sub-all="# of Opportunities"># of Opportunities</div>
+              </div>
+              <div class="fn-metric">
+                <div class="fn-metric-label">UPSELL/CROSS-SELL</div>
+                <div class="fn-metric-value fn-metric-value--good js-funnel-val" data-smb="+9% uplift (Sig)" data-all="+5% uplift (Sig)" data-tone-smb="good" data-tone-all="good">+9% uplift (Sig)</div>
+                <div class="fn-metric-sub js-funnel-sub" data-sub-smb="$ of Upsell/Cross-sell" data-sub-all="$ of Upsell/Cross-sell">$ of Upsell/Cross-sell</div>
+              </div>
+              <div class="fn-metric">
+                <div class="fn-metric-label">MULTI-CLOUD PG</div>
+                <div class="fn-metric-value fn-metric-value--empty js-funnel-val" data-smb="—" data-all="—" data-tone-smb="empty" data-tone-all="empty">—</div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="fn-row">
+          <div class="fn-stage">
+            <div class="fn-trap fn-trap--prog">PROGRESSION</div>
+          </div>
+          <div class="fn-rail" aria-hidden="true"></div>
+          <article class="fn-card">
+            <h3>Middle of Funnel</h3>
+            <div class="fn-metrics">
+              <div class="fn-metric fn-metric--boxed" id="funnel-mid-highlight">
+                <div class="fn-metric-label">EARLY STAGE PROG.</div>
+                <div class="fn-metric-value fn-metric-value--good js-funnel-val" data-smb="49% Progression (Sig)" data-all="41% Progression (Sig)" data-tone-smb="good" data-tone-all="good">49% Progression (Sig)</div>
+                <div class="fn-metric-sub js-funnel-sub" data-sub-smb="Stg 2-4 movement Share of opty's" data-sub-all="Stg 2-4 movement Share of opty's">Stg 2-4 movement Share of opty's</div>
+              </div>
+              <div class="fn-metric">
+                <div class="fn-metric-label">EARLY STAGE PROG. (II)</div>
+                <div class="fn-metric-value fn-metric-value--good js-funnel-val" data-smb="25% Progression (No Sig)" data-all="20% Progression (No Sig)" data-tone-smb="good" data-tone-all="good">25% Progression (No Sig)</div>
+                <div class="fn-metric-sub js-funnel-sub" data-sub-smb="Stg 2-4 Days between stages" data-sub-all="Stg 2-4 Days between stages">Stg 2-4 Days between stages</div>
+              </div>
+              <div class="fn-metric">
+                <div class="fn-metric-label">LATE STAGE PROG.</div>
+                <div class="fn-metric-value fn-metric-value--neutral js-funnel-val" data-smb="2.9% uplift (Not sig)" data-all="1.5% uplift (Not sig)" data-tone-smb="neutral" data-tone-all="neutral">2.9% uplift (Not sig)</div>
+                <div class="fn-metric-sub js-funnel-sub" data-sub-smb="Stg 4+ momentum" data-sub-all="Stg 4+ momentum">Stg 4+ momentum</div>
+              </div>
+              <div class="fn-metric">
+                <div class="fn-metric-label">CHANGE IN OPTY VALUE</div>
+                <div class="fn-metric-value fn-metric-value--empty js-funnel-val" data-smb="—" data-all="—" data-tone-smb="empty" data-tone-all="empty">—</div>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="fn-row">
+          <div class="fn-stage">
+            <div class="fn-trap fn-trap--conv">CONVERSION</div>
+          </div>
+          <div class="fn-rail" aria-hidden="true"></div>
+          <article class="fn-card">
+            <h3>End of Funnel</h3>
+            <div class="fn-metrics">
+              <div class="fn-metric">
+                <div class="fn-metric-label">ACV PER ACCOUNT</div>
+                <div class="fn-metric-value fn-metric-value--good js-funnel-val" data-smb="+46% uplift (Sig)" data-all="+34% uplift (Sig)" data-tone-smb="good" data-tone-all="good">+46% uplift (Sig)</div>
+                <div class="fn-metric-sub js-funnel-sub" data-sub-smb="Closed Won results $1.4K ($1.1K)" data-sub-all="Closed Won results $1.2K ($1.0K)">Closed Won results $1.4K ($1.1K)</div>
+              </div>
+              <div class="fn-metric">
+                <div class="fn-metric-label">DEAL SIZE</div>
+                <div class="fn-metric-value fn-metric-value--good js-funnel-val" data-smb="+11% uplift (No sig)" data-all="+8% uplift (No sig)" data-tone-smb="good" data-tone-all="good">+11% uplift (No sig)</div>
+                <div class="fn-metric-sub js-funnel-sub" data-sub-smb="Larger Deal sizes" data-sub-all="Larger Deal sizes">Larger Deal sizes</div>
+              </div>
+              <div class="fn-metric">
+                <div class="fn-metric-label">DEAL CYCLE</div>
+                <div class="fn-metric-value fn-metric-value--bad js-funnel-val" data-smb="+8% uplift (No sig)" data-all="+6% uplift (No sig)" data-tone-smb="bad" data-tone-all="bad">+8% uplift (No sig)</div>
+                <div class="fn-metric-sub js-funnel-sub" data-sub-smb="Higher Deal cycles" data-sub-all="Higher Deal cycles">Higher Deal cycles</div>
+              </div>
+              <div class="fn-metric">
+                <div class="fn-metric-label">CONVERSION</div>
+                <div class="fn-metric-value fn-metric-value--bad js-funnel-val" data-smb="-13% uplift" data-all="-9% uplift" data-tone-smb="bad" data-tone-all="bad">-13% uplift</div>
+                <div class="fn-metric-sub js-funnel-sub" data-sub-smb="Lower conversion" data-sub-all="Lower conversion">Lower conversion</div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    (function () {
+      var scopeEl = document.getElementById("funnel-scope-label");
+      var btns = document.querySelectorAll(".funnel-seg-btn");
+
+      function applySegment(seg) {
+        if (scopeEl) {
+          scopeEl.textContent = seg === "smb" ? "(SMB)" : "(All segments)";
+        }
+        btns.forEach(function (b) {
+          var on = b.getAttribute("data-segment") === seg;
+          b.classList.toggle("is-active", on);
+          b.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+        document.querySelectorAll(".js-funnel-val").forEach(function (el) {
+          var v = el.getAttribute("data-" + seg);
+          if (v != null) el.textContent = v;
+          var tone = el.getAttribute("data-tone-" + seg) || "good";
+          el.className = "fn-metric-value js-funnel-val fn-metric-value--" + tone;
+        });
+        document.querySelectorAll(".js-funnel-sub").forEach(function (el) {
+          var s = el.getAttribute("data-sub-" + seg);
+          if (s != null) el.textContent = s;
+        });
+      }
+
+      btns.forEach(function (b) {
+        b.addEventListener("click", function () {
+          applySegment(b.getAttribute("data-segment"));
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
